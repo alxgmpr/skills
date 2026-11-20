@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: reads-udm-pro-boot-log
+expected_outcome: |
+  Identifies from the log that the SoC, EEPROM preload, DRAM and PCIe are healthy and that the eMMC behind the USB bridge is not responding (Bad device usb 0 / XHCI timeout loop), and gives concrete next checks and a repair route (eMMC replacement and clone from a working unit, or donor), without blaming the SPI flash or SoC.
+context:
+  scaffold_script: place-files.sh

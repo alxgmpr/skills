@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: annotates-converter-photo
+expected_outcome: |
+  An annotated copy of the photo with marks sitting on Q17's pads and the nearby parts to check (sense resistors, diodes, sync FETs), numbered to match a short list of unpowered measurements with expected readings.
+context:
+  scaffold_script: place-files.sh

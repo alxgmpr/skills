@@ -1,0 +1,298 @@
+<meta charset="utf-8">
+<title>Bench Worksheet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Condensed:wght@500;700&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+/* Bench worksheet: phases of meter checks on the left, a sticky "do this next" panel on the right; stacks on phones. */
+:root {
+  --bg: #f3f5f2; --panel: #ffffff; --fg: #1b221d; --muted: #5d6a61; --line: #d5ddd6;
+  --copper: #a85a22; --probe-red: #c62828; --probe-black: #1b1b1b; --probe-black-fg: #ffffff;
+  --ok: #2e7d32; --ok-bg: #e3f1e4; --warn: #9a6400; --warn-bg: #fbf0d9; --bad: #b3261e; --bad-bg: #f9e1df;
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121714; --panel: #1a211c; --fg: #e4ebe5; --muted: #98a69c; --line: #2c3730;
+  --copper: #e09a5e; --probe-red: #ef5350; --probe-black: #e4ebe5; --probe-black-fg: #121714;
+  --ok: #7fcf84; --ok-bg: #1d3320; --warn: #f0c060; --warn-bg: #3a2f14; --bad: #ff8a80; --bad-bg: #3d1c1a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121714; --panel: #1a211c; --fg: #e4ebe5; --muted: #98a69c; --line: #2c3730;
+  --copper: #e09a5e; --probe-red: #ef5350; --probe-black: #e4ebe5; --probe-black-fg: #121714;
+  --ok: #7fcf84; --ok-bg: #1d3320; --warn: #f0c060; --warn-bg: #3a2f14; --bad: #ff8a80; --bad-bg: #3d1c1a; color-scheme: dark }
+
+body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--body); margin: 0; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.2; }
+h1 { font-size: 2.1rem; } h2 { font-size: 1.35rem; } h3 { font-size: 1rem; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font: 600 .72rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--copper); }
+.lede { color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips span { font: 600 .74rem/1 var(--mono); padding: 5px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+header { display: grid; gap: 10px; margin-bottom: 24px; }
+
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px; align-items: start; }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } aside { order: -1; } }
+main { display: grid; gap: 22px; min-width: 0; }
+
+section.phase { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 12px; min-width: 0; }
+.phasehead { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.num { font: 700 1.1rem/1 var(--display); color: var(--copper); }
+.why { color: var(--muted); font-size: .92rem; }
+.gate { font-size: .88rem; border: 1px solid var(--bad); background: var(--bad-bg); border-radius: 8px; padding: 10px 12px; }
+
+.item { display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: 10px 14px; align-items: start;
+  border-top: 1px dashed var(--line); padding-top: 12px; }
+@media (max-width: 560px) { .item { grid-template-columns: minmax(0, 1fr); } }
+.probes { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: .9rem; }
+.probe { display: inline-flex; align-items: center; font: 600 .78rem/1 var(--mono); padding: 5px 8px; border-radius: 999px; }
+.probe.red { background: var(--probe-red); color: #fff; }
+.probe.black { background: var(--probe-black); color: var(--probe-black-fg); }
+.mode { font: 600 .72rem/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); padding: 4px 7px; border-radius: 4px; }
+.expect { font-size: .86rem; color: var(--muted); }
+.left { display: grid; gap: 8px; min-width: 0; }
+.entry { display: grid; gap: 6px; }
+.entry label { font: 600 .72rem/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.entry input { font: 600 1.05rem/1 var(--mono); padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); width: 100%; box-sizing: border-box; }
+.choices { display: grid; gap: 6px; grid-column: 1 / -1; }
+.choices button { text-align: left; font: 400 .9rem/1.35 var(--body); padding: 9px 11px; }
+.choices button[aria-pressed="true"] { border-color: var(--copper); box-shadow: inset 0 0 0 1px var(--copper); font-weight: 600; }
+input:focus-visible, button:focus-visible { outline: 2px solid var(--copper); outline-offset: 2px; }
+.pill { font: 600 .74rem/1 var(--mono); letter-spacing: .04em; padding: 5px 8px; border-radius: 999px; justify-self: start; }
+.pill.ok { background: var(--ok-bg); color: var(--ok); }
+.pill.warn { background: var(--warn-bg); color: var(--warn); }
+.pill.bad { background: var(--bad-bg); color: var(--bad); }
+.pill.none { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+.advice { font-size: .88rem; grid-column: 1 / -1; border-left: 3px solid var(--line); padding-left: 10px; }
+.advice.bad { border-color: var(--bad); } .advice.warn { border-color: var(--warn); }
+
+aside { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); display: grid; gap: 14px; }
+@media (max-width: 900px) { aside { position: static; } }
+.diag { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; }
+.next { display: grid; gap: 6px; border-radius: 8px; padding: 12px; background: var(--bg); border: 1px solid var(--line); }
+.next.bad { border-color: var(--bad); background: var(--bad-bg); }
+.next b { font-family: var(--display); font-size: 1.05rem; }
+.phases { display: grid; gap: 6px; }
+.phases a { display: flex; justify-content: space-between; gap: 8px; color: var(--fg); text-decoration: none; font-size: .9rem; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--line); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+button { font: 600 .85rem/1 var(--body); padding: 9px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; }
+button.primary { background: var(--copper); border-color: var(--copper); color: #fff; }
+.note { font-size: .82rem; color: var(--muted); }
+.photos { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+figure { margin: 0; display: grid; gap: 6px; }
+figure img { width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--line); }
+figcaption { font-size: .85rem; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow" id="eyebrow"></span>
+    <h1 id="h1"></h1>
+    <p class="lede" id="lede"></p>
+    <div class="chips" id="off"></div>
+  </header>
+  <div class="grid">
+    <main id="phases"></main>
+    <aside>
+      <div class="diag">
+        <span class="eyebrow">Do this next</span>
+        <div class="next" id="next"></div>
+        <div id="recheck" style="display:grid;gap:8px"></div>
+        <div class="phases" id="phasenav"></div>
+        <div class="actions">
+          <button class="primary" id="copy" type="button">Copy readings</button>
+          <button id="reset" type="button">Clear</button>
+        </div>
+        <p class="note" id="copynote">Copy the readings and paste them back into the chat.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+// Judge helpers. A reading v is {n: number} or {ol: true}. Ohms are in Ω, volts in V (diode mode too), current in mA.
+const atLeast = (ok, warn) => v => v.ol || v.n >= ok ? "ok" : v.n >= warn ? "warn" : "bad";   // shorts: higher is better, OL is fine
+const atMost = (ok, warn) => v => v.ol ? "bad" : v.n <= ok ? "ok" : v.n <= warn ? "warn" : "bad"; // continuity / sense paths: OL is a fault
+const between = (lo, hi, slack = 0.25) => v => v.ol ? "bad" : v.n >= lo && v.n <= hi ? "ok"
+  : v.n >= lo * (1 - slack) && v.n <= hi * (1 + slack) ? "warn" : "bad";                       // rails, diode drops
+const openOk = (warn = 1) => v => v.ol || v.n >= warn ? "ok" : v.n >= 0.1 ? "warn" : "bad";    // reverse diode: OL or a rising number
+
+// ============================ EDIT FROM HERE ============================
+// One SHEET per job. Replace everything in it; the example shows each item kind once.
+const SHEET = {
+  key: "example-unit-short-hunt-v1",            // localStorage key: unique per unit + job, bump when items change
+  eyebrow: "DEVICE · board rev · the rail or block under test",
+  title: "What question does this worksheet answer?",
+  lede: "State so far, in two or three sentences: what is known, what has been removed, what this sheet will decide.",
+  off: ["L17", "C123"],                         // parts currently off the board (chips under the header); [] to hide
+  phases: [
+    { id: "cold", title: "Unpowered checks", why: "Why this phase exists and what it rules out.",
+      photos: [/* { src: "u18-pins.jpg", alt: "U18 with pins 3, 7, 8 labeled", caption: "Probe points for A1-A3." } */],
+      items: [
+        // ohm: resistance. Thresholds come from a known-good twin on the same board where one exists.
+        { id: "A1", kind: "ohm", title: "Rail to ground", mode: "Ω ohms", red: "C123 + (ring 1 in the photo)", black: "C123 − pad",
+          expect: "Normal: hundreds of ohms or more, like the twin rail at C144 (measured 480Ω).",
+          judge: atLeast(100, 20),
+          advice: { bad: "Shorted. Go to phase 2 and lift parts in the order shown.", warn: "Low. Compare against the twin rail before deciding." } },
+        // v: volts, also used for diode mode.
+        { id: "A2", kind: "v", title: "Rail diode check, red on +", mode: "▷| diode", red: "C123 +", black: "GND",
+          expect: "Normal: climbs as the cap charges, then OL or above 0.4V.", judge: openOk(0.3),
+          advice: { bad: "Reads near 0V both ways: a hard short.", warn: "Leaky. Repeat with the leads swapped." } },
+        // pair: type the marked value and the measured one; ok within 0.8-1.25x.
+        { id: "A3", kind: "pair", title: "Gate resistor", mode: "Ω ohms", red: "R214 end toward 'D10' text", black: "R214 other end", marked: "51",
+          expect: "Normal: close to the marking (510 = 51Ω).",
+          advice: { bad: "Open or far off. Replace with the marked value, same size.", warn: "Lower than marked: lift one end and re-measure." } },
+        // choice: [value, button text, verdict]
+        { id: "A4", kind: "choice", title: "Which pad beeps to U18 pin 9?",
+          options: [["gate", "The lone small pad next to the 'Q4' text", "ok"], ["other", "A different pad", "bad"], ["unsure", "Can't tell", "warn"]],
+          advice: { bad: "The substitute's pinout doesn't match this footprint. Stop and send a photo.", warn: "Use ohms, not the beeper: the gate pad reads the gate resistor's value." } },
+      ] },
+    // powered: true blocks the phase until every earlier check is free of faults.
+    { id: "power", title: "First power-up", powered: true, why: "Only after the unpowered phase is clean.",
+      items: [
+        { id: "P1", kind: "v", title: "Input voltage", mode: "V DC", red: "U18 pin 3 (VIN)", black: "U18 pin 7 (VEE)",
+          expect: "Normal: 44-57V from the switch port.", judge: between(44, 57),
+          advice: { bad: "Unplug. Something is pulling the input down.", warn: "Sagging. Feel for a warm part and unplug." } },
+        { id: "P2", kind: "ma", title: "Port draw shown in UniFi", mode: "mA", expect: "Normal: under 150mA idle.", judge: atMost(150, 300),
+          advice: { bad: "Unplug.", warn: "Higher than idle should be." } },
+      ] },
+  ],
+};
+// ============================= EDIT TO HERE =============================
+
+const PHASES = SHEET.phases;
+const ITEMS = PHASES.flatMap(p => p.items);
+const pairJudge = (marked, meas) => { if (meas.ol) return "bad"; const r = meas.n / marked;
+  return r >= 0.8 && r <= 1.25 ? "ok" : r >= 0.3 && r < 0.8 ? "warn" : "bad"; };
+const $ = id => document.getElementById(id);
+document.title = SHEET.title;
+$("eyebrow").textContent = SHEET.eyebrow; $("h1").textContent = SHEET.title; $("lede").textContent = SHEET.lede;
+$("off").innerHTML = (SHEET.off || []).map(p => `<span>off board: ${p}</span>`).join("");
+
+let store = {};
+try { store = JSON.parse(localStorage.getItem(SHEET.key) || "{}"); } catch (e) { store = {}; }
+const save = () => { try { localStorage.setItem(SHEET.key, JSON.stringify(store)); } catch (e) {} };
+
+// Accepts OL, 24.5k, 1.2M, 520mV, 0.52V, 8, 8Ω, 25mA.
+function parse(kind, raw) {
+  const s = (raw || "").trim().toLowerCase().replace(/\s+/g, "").replace(/(Ω|ω|ohms?|v|a)$/, "");
+  if (!s) return null;
+  if (/^(ol|o\.l\.?|open|inf)$/.test(s)) return { ol: true };
+  const m = s.match(/^(\d*\.?\d+)([km]?)$/);
+  if (!m) return { err: true };
+  const mult = kind === "ohm" || kind === "pair" ? { "": 1, k: 1e3, m: 1e6 }[m[2]]
+    : kind === "v" ? { "": 1, m: 1e-3 }[m[2]] : { "": 1, m: 1 }[m[2]];
+  return mult === undefined ? { err: true } : { n: parseFloat(m[1]) * mult };
+}
+
+function verdict(it) {
+  if (it.kind === "choice") { const o = it.options.find(o => o[0] === store[it.id]); return o ? o[2] : "none"; }
+  if (it.kind === "pair") {
+    const mk = parse("pair", store[it.id + ":marked"] ?? it.marked), ms = parse("pair", store[it.id]);
+    if (!ms) return "none";
+    return ms.err || !mk || mk.err || mk.ol ? "err" : pairJudge(mk.n, ms);
+  }
+  const v = parse(it.kind, store[it.id]);
+  if (!v) return "none";
+  if (v.err || (v.ol && it.kind === "ma")) return "err";
+  return it.judge(v);
+}
+
+const LABEL = { ok: "Normal", warn: "Look again", bad: "Fault", none: "Not done", err: "Can't read that" };
+PHASES.forEach((ph, i) => {
+  const sec = document.createElement("section");
+  sec.className = "phase"; sec.id = ph.id;
+  sec.innerHTML = `<div class="phasehead"><span class="num">${i + 1}</span><h2>${ph.title}</h2></div><p class="why">${ph.why || ""}</p>
+    <div class="gate" id="gate-${ph.id}" hidden></div>
+    ${(ph.photos || []).length ? `<div class="photos">${ph.photos.map(p => `<figure><a href="${p.src}" target="_blank"><img src="${p.src}" alt="${p.alt}"></a><figcaption>${p.caption || ""}</figcaption></figure>`).join("")}</div>` : ""}`;
+  ph.items.forEach(it => {
+    const row = document.createElement("div");
+    row.className = "item";
+    const probes = it.red ? `<div class="probes"><span class="mode">${it.mode}</span><span class="probe red">RED</span><span>${it.red}</span></div>
+      <div class="probes"><span class="mode" style="visibility:hidden">${it.mode}</span><span class="probe black">BLK</span><span>${it.black}</span></div>`
+      : it.mode ? `<div class="probes"><span class="mode">${it.mode}</span></div>` : "";
+    let right = "";
+    if (it.kind === "pair") {
+      right = `<div class="entry"><label for="in-${it.id}-m">Marked Ω</label><input id="in-${it.id}-m" data-key="${it.id}:marked" inputmode="decimal" autocomplete="off" placeholder="e.g. 10"></div>
+        <div class="entry"><label for="in-${it.id}">${it.id} measured Ω</label><input id="in-${it.id}" data-key="${it.id}" inputmode="decimal" autocomplete="off" placeholder="e.g. 9.8 or OL"></div>`;
+    } else if (it.kind !== "choice") {
+      const unit = { ohm: "Ω", v: "V", ma: "mA" }[it.kind];
+      const hint = { ohm: "e.g. 1.8 or OL", v: "e.g. 0.52 or OL", ma: "e.g. 25" }[it.kind];
+      right = `<div class="entry"><label for="in-${it.id}">${it.id} · ${unit}</label><input id="in-${it.id}" data-key="${it.id}" inputmode="decimal" autocomplete="off" placeholder="${hint}"></div>`;
+    }
+    row.innerHTML = `<div class="left"><h3>${it.id} · ${it.title}</h3>${probes}${it.expect ? `<p class="expect">${it.expect}</p>` : ""}</div>
+      <div class="entry" style="gap:8px">${right}<span class="pill none" id="pill-${it.id}">Not done</span></div>
+      ${it.kind === "choice" ? `<div class="choices">${it.options.map(o => `<button type="button" id="ch-${it.id}-${o[0]}" data-item="${it.id}" data-val="${o[0]}" aria-pressed="false">${o[1]}</button>`).join("")}</div>` : ""}
+      <p class="advice" id="adv-${it.id}" hidden></p>`;
+    sec.appendChild(row);
+  });
+  $("phases").appendChild(sec);
+});
+
+const itemOf = key => ITEMS.find(i => i.id === key.split(":")[0]);
+document.querySelectorAll("input[data-key]").forEach(inp => {
+  inp.value = store[inp.dataset.key] ?? (inp.dataset.key.endsWith(":marked") ? itemOf(inp.dataset.key).marked : "") ?? "";
+  inp.addEventListener("input", () => { store[inp.dataset.key] = inp.value; save(); update(); });
+});
+document.querySelectorAll(".choices button").forEach(b => b.addEventListener("click", () => {
+  store[b.dataset.item] = store[b.dataset.item] === b.dataset.val ? "" : b.dataset.val; save(); update();
+}));
+
+function update() {
+  const all = [];
+  PHASES.forEach((ph, pi) => ph.items.forEach(it => {
+    const vd = verdict(it);
+    all.push({ ph, pi, it, vd });
+    const pill = $("pill-" + it.id);
+    pill.className = "pill " + (vd === "err" ? "warn" : vd); pill.textContent = LABEL[vd];
+    const adv = $("adv-" + it.id);
+    const text = (vd === "bad" || vd === "warn") && it.advice ? it.advice[vd]
+      : vd === "err" ? (it.kind === "pair" ? "Fill in the marked value as plain ohms, then the reading." : "Use a number (k or M for ohms, mV for volts) or OL.") : "";
+    adv.hidden = !text; adv.textContent = text || ""; adv.className = "advice " + (vd === "err" ? "warn" : vd);
+    if (it.kind === "choice") it.options.forEach(o => $(`ch-${it.id}-${o[0]}`).setAttribute("aria-pressed", String(store[it.id] === o[0])));
+  }));
+
+  PHASES.forEach((ph, pi) => {             // powered phases stay blocked while an earlier check shows a fault
+    const earlier = all.filter(a => a.pi < pi && a.vd === "bad");
+    const g = $("gate-" + ph.id), msg = ph.powered && earlier.length ? `Don't power up yet. Fix these first: ${earlier.map(a => a.it.id).join(", ")}.` : "";
+    g.hidden = !msg; g.textContent = msg;
+  });
+
+  const firstBad = all.find(a => a.vd === "bad"), firstTodo = all.find(a => a.vd === "none" || a.vd === "err"), nx = $("next");
+  if (firstBad) { nx.className = "next bad";
+    nx.innerHTML = `<span class="eyebrow">Fix first · ${firstBad.it.id}</span><b>${firstBad.it.title}</b><span>${firstBad.it.advice?.bad || ""}</span>`;
+  } else if (firstTodo) { nx.className = "next";
+    nx.innerHTML = `<span class="eyebrow">Next · phase ${firstTodo.pi + 1}</span><b>${firstTodo.it.id} · ${firstTodo.it.title}</b><span>${firstTodo.it.expect || firstTodo.ph.why || ""}</span>`;
+  } else { nx.className = "next";
+    nx.innerHTML = `<span class="eyebrow">Done</span><b>Every step recorded</b><span>Copy the readings and paste them back into the chat.</span>`; }
+  const warns = all.filter(a => a.vd === "warn");
+  $("recheck").innerHTML = warns.length ? `<span class="eyebrow">Look again</span>` + warns.map(a => `<span class="note"><b>${a.it.id}</b> · ${a.it.title}</span>`).join("") : "";
+  $("phasenav").innerHTML = PHASES.map((ph, pi) => {
+    const rows = all.filter(a => a.pi === pi), done = rows.filter(a => a.vd !== "none" && a.vd !== "err").length;
+    const worst = rows.some(a => a.vd === "bad") ? "bad" : rows.some(a => a.vd === "warn") ? "warn" : done === rows.length ? "ok" : "none";
+    return `<a href="#${ph.id}"><span>${pi + 1}. ${ph.title}</span><span class="pill ${worst}">${done}/${rows.length}</span></a>`;
+  }).join("");
+}
+
+$("copy").addEventListener("click", () => {
+  const lines = [SHEET.title + ":"];
+  ITEMS.forEach(it => {
+    let val = store[it.id] || "-";
+    if (it.kind === "choice") { const o = it.options.find(o => o[0] === store[it.id]); val = o ? o[1] : "-"; }
+    if (it.kind === "pair") val = `marked ${store[it.id + ":marked"] ?? it.marked ?? "?"}, measured ${store[it.id] || "-"}`;
+    const vd = verdict(it), where = it.red ? ` (${it.mode} red=${it.red} black=${it.black})` : "";
+    lines.push(`${it.id} ${it.title}${where}: ${val}${vd !== "none" ? " [" + LABEL[vd] + "]" : ""}`);
+  });
+  const text = lines.join("\n"), note = $("copynote");
+  navigator.clipboard.writeText(text).then(() => { note.textContent = "Copied. Paste it into the chat."; })
+    .catch(() => { note.textContent = "Copy was blocked here. Select the text below and copy it by hand.";
+      const pre = document.createElement("pre"); pre.textContent = text; pre.style.cssText = "white-space:pre-wrap;font:12px/1.4 var(--mono);user-select:all"; note.after(pre); });
+});
+$("reset").addEventListener("click", () => {
+  store = {}; save();
+  document.querySelectorAll("input[data-key]").forEach(i => { i.value = i.dataset.key.endsWith(":marked") ? (itemOf(i.dataset.key).marked || "") : ""; });
+  update();
+});
+update();
+</script>

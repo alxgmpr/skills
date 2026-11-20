@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: sources-poe-parts-digikey
+expected_outcome: |
+  A DigiKey BOM CSV whose lines are real, currently in-stock cut-tape DigiKey part numbers obtained from the DigiKey API (not guessed and not from the website), with quantities including spares, and a reply stating stock and price for each line.

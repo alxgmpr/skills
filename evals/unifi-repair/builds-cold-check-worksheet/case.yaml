@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: builds-cold-check-worksheet
+expected_outcome: |
+  A single-file interactive HTML worksheet of unpowered meter checks around the LM5072 (VIN-VEE, VEE-RTN, VIN-RTN and downstream parts), each with exact probe points, an expected reading, an input field and a live verdict, plus a way to copy the readings out. It uses the user's photo with the probed pins marked.
+context:
+  scaffold_script: place-files.sh
