@@ -1,6 +1,6 @@
 # skills
 
-Agent skills in the open [SKILL.md](https://agentskills.io) format. They work with any agent that reads skills (Claude Code, Codex, Cursor, Gemini CLI, OpenCode, and others).
+Agent skills in the open [SKILL.md](https://agentskills.io) format.
 
 | Skill | What it does |
 |---|---|
